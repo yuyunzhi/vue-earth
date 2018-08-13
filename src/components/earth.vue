@@ -43,12 +43,29 @@ export default {
         isMouseDown:false,
         isTweening:false,
         tick:1,
+
+        globeContainer:null,
+        globeDoms:[],
+
+        pixelExpandOffset:1.5,
+        rX:0,
+        rY:0,
+        rZ:0,
         dragX:null,
         dragY:null,
         dragLat:null,
         dragLng:null,
         dY:null,
         dX:null,
+        sinRX:null,
+        sinRY:null,
+        sinRZ:null,
+        cosRX:null,
+        cosRY:null,
+        cosRZ:null,
+
+        vertices:[],
+        verticesRow:[],
         
     }
   },
@@ -62,12 +79,12 @@ export default {
         var worldBg = document.querySelector('.world-bg')
         worldBg.style.backgroundImage = 'url(' + this.URLS.bg + ')'
         var globe = document.querySelector('.world-globe')
-        var globeContainer = document.querySelector('.world-globe-doms-container')
+        this.globeContainer = document.querySelector('.world-globe-doms-container')
         var globePole = document.querySelector('.world-globe-pole')
         var globeHalo = document.querySelector('.world-globe-halo')
         globeHalo.style.backgroundImage = 'url(' + this.URLS.halo + ')'
 
-        //this.regenerateGlobe();
+        this.regenerateGlobe();
 
         //以下直接使用即可
         // var gui = new dat.GUI()
@@ -92,32 +109,12 @@ export default {
         world.addEventListener('mousedown', this.onMouseDown);
         world.addEventListener('mousemove', this.onMouseMove);
         world.addEventListener('mouseup', this.onMouseUp);
-        world.addEventListener('touchstart', this.touchPass(this.onMouseDown));
-        world.addEventListener('touchmove', this.touchPass(this.onMouseMove));
-        world.addEventListener('touchend', this.touchPass(this.onMouseUp));
-    //     world.addEventListener('mousewheel', function(e){
-    //         e = e || window.event;  
-    //                 if (e.wheelDelta) {  //第一步：先判断浏览器IE，谷歌滑轮事件               
-    //                     if (e.wheelDelta > 0) { //当滑轮向上滚动时  
-    //                         if('zoom==0){
-    //                             'zoom=0.5
-                                
-    //                         } else if('zoom==1){
-    //                             return
-    //                         }else if('zoom==0.5){
-    //                             'zoom=1
-    //                         }
-    //                     } else if (e.wheelDelta < 0) { //当滑轮向下滚动时  
-    //                         if('zoom==0){
-    //                             return
-    //                         } else if('zoom==1){
-    //                             'zoom=0.5
-    //                         }else if('zoom==0.5){
-    //                             'zoom=0
-    //                         } 
-    //                 }  
-    //             } 
-    //     });
+        world.addEventListener('mousewheel', this.onMouseWheel)
+        // world.addEventListener('touchstart', this.touchPass(this.onMouseDown));
+        // world.addEventListener('touchmove', this.touchPass(this.onMouseMove));
+        // world.addEventListener('touchend', this.touchPass(this.onMouseUp));
+
+
     //     var picture = document.querySelectorAll('.picture')
     //     for(var i=0;i<picture.length;i++){
     //         picture[i].addEventListener('mouseover', function(e){
@@ -134,6 +131,72 @@ export default {
 
     //     loop();
      },
+     regenerateGlobe() {
+        var dom, domStyle;
+        var x, y;
+        while (dom = this.globeContainer.firstChild) {
+            this.globeContainer.removeChild(dom);
+        }
+
+        var segX = this.config.segX;
+        var segY = this.config.segY;
+
+        var diffuseImgBackgroundStyle = 'url(' + this.URLS.diffuse + ')';
+        var segWidth = 1600 / this.segX | 0;
+        var segHeight = 800 / this.segY | 0;
+
+        var radius = (536) / 2;
+
+        var phiStart = 0;
+        var phiLength = Math.PI * 2;
+
+        var thetaStart = 0;
+        var thetaLength = Math.PI;
+
+        for (y = 0; y <= segY; y++) {
+
+
+            for (x = 0; x <= segX; x++) {
+
+                var u = x / segX;
+                var v = 0.05 + y / segY * (1 - 0.1);
+
+                var vertex = {
+                    x: -radius * Math.cos(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength),
+                    y: -radius * Math.cos(thetaStart + v * thetaLength),
+                    z: radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength),
+                    phi: phiStart + u * phiLength,
+                    theta: thetaStart + v * thetaLength
+                };
+                this.verticesRow.push(vertex);
+            }
+            this.vertices.push(this.verticesRow);
+        }
+
+        for (y = 0; y < segY; ++y) {
+            for (x = 0; x < segX; ++x) {
+                dom = document.createElement('div');
+                dom.id='picture-'+y+'-'+x
+                dom.className="picture"
+                domStyle = dom.style;
+                domStyle.position = 'absolute';
+                domStyle.width = segWidth + 'px';
+                domStyle.height = segHeight + 'px';
+                domStyle.overflow = 'hidden';
+                domStyle[PerspectiveTransform.transformOriginStyleName] = '0 0';
+                domStyle.backgroundImage = diffuseImgBackgroundStyle;
+                dom.perspectiveTransform = new PerspectiveTransform(dom, segWidth, segHeight);
+                dom.topLeft = this.vertices[y][x];
+                dom.topRight = this.vertices[y][x + 1];
+                dom.bottomLeft = this.vertices[y + 1][x];
+                dom.bottomRight = this.vertices[y + 1][x + 1];
+                domStyle.backgroundPosition = (-segWidth * x) + 'px ' + (-segHeight * y) + 'px';
+                this.globeContainer.appendChild(dom);
+                this.globeDoms.push(dom);
+            }
+        }
+
+    },
      onMouseDown(e) {
         console.log(e.target)
         this.isMouseDown = true
@@ -156,6 +219,18 @@ export default {
             this.isMouseDown = false;
         }
     },
+    onMouseWheel(e){
+        e = e || window.event; 
+       //可以直接修改this.config.zoom的值
+        if (e.wheelDelta) {  //第一步：先判断浏览器IE，谷歌滑轮事件               
+            if (e.wheelDelta > 0) { //当滑轮向上滚动时  
+                console.log('滚动向上')
+            } else if (e.wheelDelta < 0) { //当滑轮向下滚动时  
+                console.log('滚动向下')
+            }  
+        } 
+    },
+    //func里pageX传参问题，移动端
     touchPass(func) {
         return function(e) {
             e.preventDefault()
@@ -165,6 +240,12 @@ export default {
             });
         }
     },
+    clamp(x, min, max) {
+        return x < min ? min : x > max ? max : x;
+    },
+    clampLng(lng) {
+        return ((lng + 180) % 360) - 180;
+    }
 
 
 
@@ -240,23 +321,5 @@ body {
     margin-left: -368px;
     margin-top: -350px;
     display: none;
-}
-.info {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    padding: 10px 10px;
-    box-sizing: border-box;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    font-size: 12px;
-}
-.info-desc {
-    color: #ddd;
-    font-size: 10px;
-}
-a {
-    color: #ff5f5f;
 }
 </style>
