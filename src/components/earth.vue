@@ -34,12 +34,21 @@ export default {
             goToBristol: function() {
                 goTo(51.4500, 2.5833);
             }
-    },
+        },
         URLS:{
             bg: 'http://wow.techbrood.com/uploads/160401/css_globe_bg.jpg',
             diffuse: 'http://wow.techbrood.com/uploads/160401/css_globe_diffuse.jpg',
             halo: 'http://wow.techbrood.com/uploads/160401/css_globe_halo.png',
         },
+        isMouseDown:false,
+        isTweening:false,
+        tick:1,
+        dragX:null,
+        dragY:null,
+        dragLat:null,
+        dragLng:null,
+        dY:null,
+        dX:null,
         
     }
   },
@@ -48,7 +57,7 @@ export default {
       this.init()
   },
   methods:{
-      init(ref) {
+      init() {
         var world = document.querySelector('.world')
         var worldBg = document.querySelector('.world-bg')
         worldBg.style.backgroundImage = 'url(' + this.URLS.bg + ')'
@@ -60,31 +69,32 @@ export default {
 
         //this.regenerateGlobe();
 
-        var gui = new dat.GUI();
-        gui.add(this.config, 'lat', -90, 90).listen();
-        gui.add(this.config, 'lng', -180, 180).listen();
-        gui.add(this.config, 'isHaloVisible');
-        gui.add(this.config, 'isPoleVisible');
-        gui.add(this.config, 'autoSpin');
-        gui.add(this.config, 'goToBristol');
-        gui.add(this.config, 'zoom', 0,1).listen();
+        //以下直接使用即可
+        // var gui = new dat.GUI()
+        // gui.add(this.config, 'lat', -90, 90).listen()
+        // gui.add(this.config, 'lng', -180, 180).listen()
+        // gui.add(this.config, 'isHaloVisible')
+        // gui.add(this.config, 'isPoleVisible')
+        // gui.add(this.config, 'autoSpin')
+        // gui.add(this.config, 'goToBristol')
+        // gui.add(this.config, 'zoom', 0,1).listen()
 
-        var stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.left = 0;
-        stats.domElement.style.top = 0;
-        document.body.appendChild(stats.domElement);
+        var stats = new Stats()
+        stats.domElement.style.position = 'absolute'
+        stats.domElement.style.left = 0
+        stats.domElement.style.top = 0
+        document.body.appendChild(stats.domElement)
 
     //     // events
-    //     world.ondragstart = function() {  //禁止鼠标拖动
-    //         return false;
-    //     };
-    //     world.addEventListener('mousedown', onMouseDown);
-    //     world.addEventListener('mousemove', onMouseMove);
-    //     world.addEventListener('mouseup', onMouseUp);
-    //     world.addEventListener('touchstart', touchPass(onMouseDown));
-    //     world.addEventListener('touchmove', touchPass(onMouseMove));
-    //     world.addEventListener('touchend', touchPass(onMouseUp));
+        world.ondragstart = function() {  //禁止鼠标拖动
+            return false;
+        };
+        world.addEventListener('mousedown', this.onMouseDown);
+        world.addEventListener('mousemove', this.onMouseMove);
+        world.addEventListener('mouseup', this.onMouseUp);
+        world.addEventListener('touchstart', this.touchPass(this.onMouseDown));
+        world.addEventListener('touchmove', this.touchPass(this.onMouseMove));
+        world.addEventListener('touchend', this.touchPass(this.onMouseUp));
     //     world.addEventListener('mousewheel', function(e){
     //         e = e || window.event;  
     //                 if (e.wheelDelta) {  //第一步：先判断浏览器IE，谷歌滑轮事件               
@@ -123,7 +133,45 @@ export default {
     //     }
 
     //     loop();
-     }
+     },
+     onMouseDown(e) {
+        console.log(e.target)
+        this.isMouseDown = true
+        this.dragX = e.pageX
+        this.dragY = e.pageY
+        this.dragLat = this.config.lat
+        this.dragLng = this.config.lng
+        console.log('我是mouseDown',this.dragX,this.dragY)
+    },
+    onMouseMove(e) {
+        if (this.isMouseDown) {
+            this.dX = e.pageX - this.dragX
+            this.dY = e.pageY - this.dragY
+            this.config.lat = this.clamp(this.dragLat + this.dY * 0.5, -90, 90)
+            this.config.lng = this.clampLng(this.dragLng - this.dX * 0.5, -180, 180)
+        }
+    },
+    onMouseUp(e) {
+        if (this.isMouseDown) {
+            this.isMouseDown = false;
+        }
+    },
+    touchPass(func) {
+        return function(e) {
+            e.preventDefault()
+            func.call(this, {
+                pageX: e.changedTouches[0].pageX,
+                pageY: e.changedTouches[0].pageY,
+            });
+        }
+    },
+
+
+
+
+
+
+
   },
 components:{}
 }
