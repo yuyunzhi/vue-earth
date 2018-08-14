@@ -1,11 +1,14 @@
 <template>
      <div class="world">
-        <div class="world-bg"></div>
-        <div class="world-globe">
-            <div class="world-globe-pole"></div>
-            <div class="world-globe-doms-container"></div>
-            <div class="world-globe-halo"></div>
+        <div class="world-bg">
+            <div class="world-globe">   
+                <div class="world-globe-doms-container"></div>
+                                              
+            </div>
+            <div class="world-globe-pole"></div> 
+            <div class="world-globe-halo"></div>    
         </div>
+         
     </div>
 </template>
 
@@ -13,7 +16,6 @@
 
 export default {
   props:[],
-
   data(){
     return {
         config:{
@@ -24,7 +26,7 @@ export default {
             segY: 12,
             isHaloVisible: true,
             isPoleVisible: true,
-            autoSpin: false,
+            autoSpin: true,
             zoom: 0,
             skipPreloaderAnimation: false,
         },
@@ -33,24 +35,21 @@ export default {
             diffuse: 'http://wow.techbrood.com/uploads/160401/css_globe_diffuse.jpg',
             halo: 'http://wow.techbrood.com/uploads/160401/css_globe_halo.png',
         },
-
+        radius:536/2,
         transformStyleName:PerspectiveTransform.transformStyleName,
-
         isMouseDown:false,
         isTweening:false,
         tick:1,
-
         stats:null, 
         globeDoms:[],
         vertices:[],
         verticesRow:[],
-
+        word:null,
         worldBg:null,
         globe:null,
         globeContainer:null,
         globePole:null,
         globeHalo:null,
-
         pixelExpandOffset:1.5,
         rX:0,
         rY:0,
@@ -66,17 +65,23 @@ export default {
         dragLat:null,
         dragLng:null,
         dY:null,
-        dX:null,
-        
+        dX:null,      
     }
   },
-  created(){},
   mounted(){
       this.init()
   },
   methods:{
       init() {
-        var world = document.querySelector('.world')
+
+        var del=document.querySelectorAll('.dg') || null
+        if(del.length){
+            for(var i=1;i<del.length;i++){
+                del[i].remove()
+            }
+        }
+
+        this.world = document.querySelector('.world')
         this.worldBg = document.querySelector('.world-bg')
         this.worldBg.style.backgroundImage = 'url(' + this.URLS.bg + ')'
         this.globe = document.querySelector('.world-globe')
@@ -87,7 +92,6 @@ export default {
 
         this.regenerateGlobe();
 
-        //以下直接使用即可
         var gui = new dat.GUI()
         gui.add(this.config, 'lat', -90, 90).listen()
         gui.add(this.config, 'lng', -180, 180).listen()
@@ -102,32 +106,31 @@ export default {
         this.stats.domElement.style.top = 0
         document.body.appendChild(this.stats.domElement)
 
-    //     // events
-        world.ondragstart = function() {  //禁止鼠标拖动
+        // events
+        this.world.ondragstart = function() {  //禁止鼠标拖动
             return false;
         };
-        world.addEventListener('mousedown', this.onMouseDown);
-        world.addEventListener('mousemove', this.onMouseMove);
-        world.addEventListener('mouseup', this.onMouseUp);
-        world.addEventListener('mousewheel', this.onMouseWheel)
-        // world.addEventListener('touchstart', this.touchPass(this.onMouseDown));
-        // world.addEventListener('touchmove', this.touchPass(this.onMouseMove));
-        // world.addEventListener('touchend', this.touchPass(this.onMouseUp));
-
-
-        // var picture = document.querySelectorAll('.picture')
-        // for(var i=0;i<picture.length;i++){
-        //     picture[i].addEventListener('mouseover', function(e){
-        //     pictureId=e.target.id
-        //     string=pictureId.split('-')
-        //     x=string[1]
-        //     y=string[2]
-        //     console.log('this',this)
-        //     this.addEventListener('mousewheel',function(e){
-        //         console.log('我是滚轮监听',x,y)
-        //     })
-        // });
-        // }
+        this.world.addEventListener('mousedown', this.onMouseDown);
+        this.world.addEventListener('mousemove', this.onMouseMove);
+        this.world.addEventListener('mouseup', this.onMouseUp);
+        this.world.addEventListener('mousewheel', this.onMouseWheel)
+        // this.world.addEventListener('touchstart', this.touchPass(this.onMouseDown));
+        // this.world.addEventListener('touchmove', this.touchPass(this.onMouseMove));
+        // this.world.addEventListener('touchend', this.touchPass(this.onMouseUp));
+        var picture = document.querySelectorAll('.picture')
+        console.log(picture)
+        for(var i=0;i<picture.length;i++){
+            picture[i].addEventListener('mouseover', function(e){
+            var pictureId=e.target.id
+            var string=pictureId.split('-')
+            var x=string[1]
+            var y=string[2]
+            console.log('this',this)
+            this.addEventListener('mousewheel',function(e){
+                console.log('我是滚轮监听',x,y)
+            })
+        });
+        }
 
         this.loop();
      },
@@ -140,38 +143,29 @@ export default {
 
         var segX = this.config.segX;
         var segY = this.config.segY;
-        console.log('segx segy',segX,segY)
         var diffuseImgBackgroundStyle = 'url(' + this.URLS.diffuse + ')';
         var segWidth = 1600 / segX | 0;
         var segHeight = 800 / segY | 0;
-        console.log('segHeight',segWidth,segHeight)
         
-    
-
-        var radius = (536) / 2;
-
         var phiStart = 0;
         var phiLength = Math.PI * 2;
-
         var thetaStart = 0;
         var thetaLength = Math.PI;
 
         for (y = 0; y <= segY; y++) {
-
             var verticesRow=[]
-            
             for (x = 0; x <= segX; x++) {
                 var u = x / segX;
                 var v = 0.05 + y / segY * (1 - 0.1);
                 var vertex = {
-                    x: -radius * Math.cos(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength),
-                    y: -radius * Math.cos(thetaStart + v * thetaLength),
-                    z: radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength),
+                    x: -this.radius * Math.cos(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength),
+                    y: -this.radius * Math.cos(thetaStart + v * thetaLength),
+                    z: this.radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength),
                     phi: phiStart + u * phiLength,
                     theta: thetaStart + v * thetaLength
                 };
                 verticesRow.push(vertex);
-                console.log('verticesRow',verticesRow)
+    
             }
             this.vertices.push(verticesRow);
         }
@@ -265,7 +259,7 @@ export default {
         this.rY = (this.clampLng(this.config.lng) - 270) / 180 * Math.PI;
 
         this.globePole.style.display = this.config.isPoleVisible ? 'block' : 'none';
-        this.globeHalo.style.display = 'none';
+        this.globeHalo.style.display = this.config.isHaloVisible ? 'block' : 'none';
 
         var ratio = Math.pow(this.config.zoom, 1.5);
         this.pixelExpandOffset = 1.5 + (ratio) * -1.25;
@@ -376,80 +370,60 @@ export default {
         v1.tx = v1.px - x;
         v1.ty = v1.py - y;
 
-    },
-
-
-
-
-
-
-  },
+    }
+  }
 
 }
 </script>
 
 <style lang="scss" type="text/css" scoped>
 
-html,
-body {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    margin: 0 0;
-    overflow: hidden;
-    font-family: 'Lato', sans-serif;
-    background-color: #000;
-    color: #fff;
-}
-.world {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    cursor: move;
-    cursor: -moz-grab;
-    cursor: -webkit-grab;
-    cursor: grab;
-    border:5px solid red;
-}
+
 .world-bg {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 800px;
+    height: 600px;
     background-position: 50% 50%;
     background-size: cover;
+    top:0%;
+    left:0%;
 }
 .world-globe {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 0;
-    height: 0;
+    left:50%;
+    top:50%;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+
 }
+
 .world-globe-pole {
-    position: absolute;
-    width: 530px;
-    height: 530px;
-    left: -265px;
-    top: -265px;
+    position: relative;
+    width: 536px;
+    height: 536px;
+    top:50%;
+    left:50%;
+    transform: translate(-50%,-50%);
     border-radius: 50% 50%;
     background-color: #fff;
+    z-index: 1;
 }
 .world-globe-doms-container {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 0;
-    height: 0;
+    width: 100%;
+    height: 100%;
+
 }
 .world-globe-halo {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width:530px;
-    height:530px;
-    margin-left: -368px;
-    margin-top: -350px;
+    width:700px;
+    height:650px;
     display: none;
+    top:-9%;
+    left:4%;
+    z-index: 3;
+    border:1px solid red;
+    
 }
 </style>
