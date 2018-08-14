@@ -140,12 +140,14 @@ export default {
 
         var segX = this.config.segX;
         var segY = this.config.segY;
-
+        console.log('segx segy',segX,segY)
         var diffuseImgBackgroundStyle = 'url(' + this.URLS.diffuse + ')';
         var segWidth = 1600 / segX | 0;
         var segHeight = 800 / segY | 0;
+        console.log('segHeight',segWidth,segHeight)
         
-        var verticesRow=[]
+    
+
         var radius = (536) / 2;
 
         var phiStart = 0;
@@ -155,6 +157,9 @@ export default {
         var thetaLength = Math.PI;
 
         for (y = 0; y <= segY; y++) {
+
+            var verticesRow=[]
+            
             for (x = 0; x <= segX; x++) {
                 var u = x / segX;
                 var v = 0.05 + y / segY * (1 - 0.1);
@@ -166,6 +171,7 @@ export default {
                     theta: thetaStart + v * thetaLength
                 };
                 verticesRow.push(vertex);
+                console.log('verticesRow',verticesRow)
             }
             this.vertices.push(verticesRow);
         }
@@ -175,7 +181,8 @@ export default {
                 dom = document.createElement('div');//ok
                 dom.id='picture-'+y+'-'+x//ok
                 dom.className="picture"//ok
-                domStyle = dom.style;//ok
+                domStyle = dom.style;//ok    
+                domStyle.backgroundColor="red"        
                 domStyle.position = 'absolute';//ok
                 domStyle.width = segWidth + 'px';//ok
                 domStyle.height = segHeight + 'px';//ok
@@ -194,7 +201,7 @@ export default {
         }
     },
      onMouseDown(e) {
-        console.log(e.target)
+        console.log(e)
         this.isMouseDown = true
         this.dragX = e.pageX
         this.dragY = e.pageY
@@ -377,7 +384,7 @@ export default {
 
 
   },
-components:{}
+
 }
 </script>
 
