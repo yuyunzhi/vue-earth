@@ -1,9 +1,10 @@
 <template>
-     <div class="world">
+     <div class="world" 
+     @mousedown="onMouseDown" @dragstart="ondragstart" @mousemove="onMouseMove"
+     @mouseup="onMouseUp" @mousewheel="onMouseWheel">
         <div class="world-bg">
             <div class="world-globe">   
-                <div class="world-globe-doms-container"></div>
-                                              
+                <div class="world-globe-doms-container" @click="xxx"></div>                                             
             </div>
             <div class="world-globe-pole"></div> 
             <div class="world-globe-halo"></div>    
@@ -26,7 +27,7 @@ export default {
             segY: 12,
             isHaloVisible: true,
             isPoleVisible: true,
-            autoSpin: true,
+            autoSpin: false,
             zoom: 0,
             skipPreloaderAnimation: false,
         },
@@ -105,32 +106,13 @@ export default {
         this.stats.domElement.style.left = 0
         this.stats.domElement.style.top = 0
         document.body.appendChild(this.stats.domElement)
+        
+        this.bindEventAboutPicture()
 
-        // events
-        this.world.ondragstart = function() {  //禁止鼠标拖动
-            return false;
-        };
-        this.world.addEventListener('mousedown', this.onMouseDown);
-        this.world.addEventListener('mousemove', this.onMouseMove);
-        this.world.addEventListener('mouseup', this.onMouseUp);
-        this.world.addEventListener('mousewheel', this.onMouseWheel)
         // this.world.addEventListener('touchstart', this.touchPass(this.onMouseDown));
         // this.world.addEventListener('touchmove', this.touchPass(this.onMouseMove));
         // this.world.addEventListener('touchend', this.touchPass(this.onMouseUp));
-        var picture = document.querySelectorAll('.picture')
-        console.log(picture)
-        for(var i=0;i<picture.length;i++){
-            picture[i].addEventListener('mouseover', function(e){
-            var pictureId=e.target.id
-            var string=pictureId.split('-')
-            var x=string[1]
-            var y=string[2]
-            console.log('this',this)
-            this.addEventListener('mousewheel',function(e){
-                console.log('我是滚轮监听',x,y)
-            })
-        });
-        }
+
 
         this.loop();
      },
@@ -194,14 +176,34 @@ export default {
             }
         }
     },
-     onMouseDown(e) {
-        console.log(e)
+    bindEventAboutPicture(){
+        var picture = document.querySelectorAll('.picture')
+        for(var i=0;i<picture.length;i++){
+            picture[i].addEventListener('mouseover', function(e){
+            var pictureId=e.target.id
+            var string=pictureId.split('-')
+            var x=string[1]
+            var y=string[2]
+            console.log('this',this)
+            this.addEventListener('mousewheel',function(e){
+                console.log('我是滚轮监听',x,y)
+            })
+        })
+        }   
+    },
+    xxx(e){
+        console.log('click',e.target)
+    },
+    ondragstart(){
+        return false;
+    },
+    onMouseDown(e) {
+        console.log('mousedown',e.target)
         this.isMouseDown = true
         this.dragX = e.pageX
         this.dragY = e.pageY
         this.dragLat = this.config.lat
         this.dragLng = this.config.lng
-        console.log('我是mouseDown',this.dragX,this.dragY)
     },
     onMouseMove(e) {
         if (this.isMouseDown) {
@@ -379,51 +381,108 @@ export default {
 <style lang="scss" type="text/css" scoped>
 
 
+// .world-bg {
+//     position: absolute;
+//     width: 800px;
+//     height: 600px;
+//     background-position: 50% 50%;
+//     background-size: cover;
+//     top:0%;
+//     left:0%;
+// }
+// .world-globe {
+//     position: absolute;
+//     left:50%;
+//     top:50%;
+//     width: 100%;
+//     height: 100%;
+//     z-index: 2;
+
+// }
+
+// .world-globe-pole {
+//     position: relative;
+//     width: 536px;
+//     height: 536px;
+//     top:50%;
+//     left:50%;
+//     transform: translate(-50%,-50%);
+//     border-radius: 50% 50%;
+//     background-color: #fff;
+//     z-index: 1;
+// }
+// .world-globe-doms-container {
+//     position: absolute;
+//     width: 100%;
+//     height: 100%;
+//     border:1px solid red;
+
+// }
+// .world-globe-halo {
+//     position: absolute;
+//     width:700px;
+//     height:650px;
+//     display: none;
+//     top:-9%;
+//     left:4%;
+//     z-index: 3;
+    
+// }
+
+.world {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    cursor: move;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+    cursor: grab;
+    top:2%;
+    left:2%;
+}
 .world-bg {
     position: absolute;
-    width: 800px;
-    height: 600px;
+    width: 100%;
+    height: 100%;
     background-position: 50% 50%;
     background-size: cover;
-    top:0%;
-    left:0%;
 }
 .world-globe {
     position: absolute;
-    left:50%;
-    top:50%;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    z-index: 1;
 }
-
 .world-globe-pole {
-    position: relative;
-    width: 536px;
-    height: 536px;
-    top:50%;
-    left:50%;
-    transform: translate(-50%,-50%);
+    position: absolute;
+    width: 530px;
+    height: 530px;
+    left: 50%;
+    top: 50%;
+    transform:translate(-50%,-50%);
     border-radius: 50% 50%;
     background-color: #fff;
-    z-index: 1;
+
 }
 .world-globe-doms-container {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
 
 }
 .world-globe-halo {
     position: absolute;
-    width:700px;
-    height:650px;
-    display: none;
-    top:-9%;
-    left:4%;
-    z-index: 3;
-    border:1px solid red;
-    
+    left: 50%;
+    top: 50%;
+    width: 730px;
+    height: 715px;
+    margin-left: -368px;
+    margin-top: -350px;
+    z-index: 2;
 }
 </style>
