@@ -84,10 +84,8 @@ export default {
         if(timer){
             clearTimeout(timer)
         }
-        let n = 0
         timer = setTimeout(()=>{
-            n=n+1
-            console.log(value,n++)
+            console.log(value)
         },3000)
 
 
