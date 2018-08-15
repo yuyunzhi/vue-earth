@@ -429,7 +429,7 @@ export default {
     
 // }
 
-.world {
+.world {    //修改容器尺寸
     position: absolute;
     width: 100%;
     height: 100%;
@@ -438,10 +438,10 @@ export default {
     cursor: -moz-grab;
     cursor: -webkit-grab;
     cursor: grab;
-    top:2%;
-    left:2%;
+    top:0%;
+    left:0%;
 }
-.world-bg {
+.world-bg {  //继承world的尺寸，可不修改
     position: absolute;
     width: 100%;
     height: 100%;
@@ -456,7 +456,7 @@ export default {
     height: 0;
     z-index: 1;
 }
-.world-globe-pole {
+.world-globe-pole {   //修改白底圆圈尺寸，如果修改了宽高，同时要去修改地球的半径，地球的亮光图
     position: absolute;
     width: 530px;
     height: 530px;
@@ -475,14 +475,15 @@ export default {
     height: 0;
 
 }
-.world-globe-halo {
+.world-globe-halo { //修改地球的亮光图，如果修改了宽高，同时要去修改地球的半径，白底圆圈尺寸
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 730px;
-    height: 715px;
-    margin-left: -368px;
-    margin-top: -350px;
+    transform: translate(-50%,-50%);
+    width: 740px;
+    height: 705px;
+
     z-index: 2;
+    border:1px solid red;
 }
 </style>
