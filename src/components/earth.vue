@@ -3,11 +3,11 @@
      @mousedown="onMouseDown" @dragstart="ondragstart" @mousemove="onMouseMove"
      @mouseup="onMouseUp" @mousewheel="onMouseWheel">
         <div class="world-bg">
-            <div class="world-globe">   
-                <div class="world-globe-doms-container" @click="xxx"></div>                                             
-            </div>
+            <div class="world-globe" >   
+                <div class="world-globe-doms-container" ></div>                                             
+            </div> 
             <div class="world-globe-pole"></div> 
-            <div class="world-globe-halo"></div>    
+            <div class="world-globe-halo"> </div>              
         </div>
          
     </div>
@@ -23,8 +23,8 @@ export default {
             percent: 0,
             lat: 0,
             lng: 0,
-            segX: 14,
-            segY: 12,
+            segX: 20,
+            segY: 18,
             isHaloVisible: true,
             isPoleVisible: true,
             autoSpin: false,
@@ -116,7 +116,7 @@ export default {
 
         this.loop();
      },
-     regenerateGlobe() {
+    regenerateGlobe() {
         var dom, domStyle;
         var x, y;
         while (dom = this.globeContainer.firstChild) {
@@ -186,19 +186,17 @@ export default {
             var y=string[2]
             console.log('this',this)
             this.addEventListener('mousewheel',function(e){
-                console.log('我是滚轮监听',x,y)
+                //console.log('我是滚轮监听',x,y)
             })
         })
         }   
     },
-    xxx(e){
-        console.log('click',e.target)
-    },
-    ondragstart(){
+    ondragstart(e){
+        e.preventDefault();
         return false;
     },
     onMouseDown(e) {
-        console.log('mousedown',e.target)
+                console.log('mousedown  target',e.target)
         this.isMouseDown = true
         this.dragX = e.pageX
         this.dragY = e.pageY
@@ -380,55 +378,6 @@ export default {
 
 <style lang="scss" type="text/css" scoped>
 
-
-// .world-bg {
-//     position: absolute;
-//     width: 800px;
-//     height: 600px;
-//     background-position: 50% 50%;
-//     background-size: cover;
-//     top:0%;
-//     left:0%;
-// }
-// .world-globe {
-//     position: absolute;
-//     left:50%;
-//     top:50%;
-//     width: 100%;
-//     height: 100%;
-//     z-index: 2;
-
-// }
-
-// .world-globe-pole {
-//     position: relative;
-//     width: 536px;
-//     height: 536px;
-//     top:50%;
-//     left:50%;
-//     transform: translate(-50%,-50%);
-//     border-radius: 50% 50%;
-//     background-color: #fff;
-//     z-index: 1;
-// }
-// .world-globe-doms-container {
-//     position: absolute;
-//     width: 100%;
-//     height: 100%;
-//     border:1px solid red;
-
-// }
-// .world-globe-halo {
-//     position: absolute;
-//     width:700px;
-//     height:650px;
-//     display: none;
-//     top:-9%;
-//     left:4%;
-//     z-index: 3;
-    
-// }
-
 .world {    //修改容器尺寸
     position: absolute;
     width: 100%;
@@ -482,8 +431,8 @@ export default {
     transform: translate(-50%,-50%);
     width: 740px;
     height: 705px;
-
     z-index: 2;
     border:1px solid red;
+    pointer-events: none;
 }
 </style>

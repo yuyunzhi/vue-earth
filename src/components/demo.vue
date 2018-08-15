@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper">
-
+      <div>100000</div>
+      <div class="xxx" @click="clickPop"></div>
   </div>
 </template>
 
@@ -18,7 +19,6 @@ export default {
   computed:{},
   methods:{
       init(){
-
             for(var i=0;i<10;i++){
                 var dom=document.querySelector('.wrapper')
                 var div=document.createElement('div')
@@ -36,6 +36,9 @@ export default {
       },
       yyy(e){
           console.log(e.target.id)
+      },
+      clickPop(e){
+          console.log(e)
       }
   },
 
@@ -45,6 +48,19 @@ export default {
 .wrapper{
     height:80%;
     width:80%;
-
+    margin:0 auto;
+    border:1px solid red;
+    text-align: center;
+}
+.abc{
+    border:1px solid blue;
+}
+.xxx{
+    height:80%;
+    width:80%;
+    background:blue;
+    opacity:0.3;
+    position: absolute;
+    pointer-events: none
 }
 </style>
