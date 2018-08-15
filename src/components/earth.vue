@@ -1,15 +1,17 @@
 <template>
-     <div class="world" 
-     @mousedown="onMouseDown" @dragstart="ondragstart" @mousemove="onMouseMove"
-     @mouseup="onMouseUp" @mousewheel="onMouseWheel">
-        <div class="world-bg">
-            <div class="world-globe" >   
-                <div class="world-globe-doms-container" ></div>                                             
-            </div> 
-            <div class="world-globe-pole"></div> 
-            <div class="world-globe-halo"> </div>              
+    <div>
+        <input type="text" @input="getInformation">
+        <div class="world" 
+            @mousedown="onMouseDown" @dragstart="ondragstart" @mousemove="onMouseMove"
+            @mouseup="onMouseUp" @mousewheel="onMouseWheel">
+            <div class="world-bg">
+                <div class="world-globe" >   
+                    <div class="world-globe-doms-container" ></div>                                             
+                </div> 
+                <div class="world-globe-pole"></div> 
+                <div class="world-globe-halo"> </div>              
+            </div>      
         </div>
-         
     </div>
 </template>
 
@@ -19,6 +21,7 @@ export default {
   props:[],
   data(){
     return {
+        content:null,
         config:{
             percent: 0,
             lat: 0,
@@ -73,7 +76,23 @@ export default {
       this.init()
   },
   methods:{
-      init() {
+    getInformation(e){
+
+        let timer
+        let input=e.currentTarget
+        let value=input.value.trim()
+        if(timer){
+            clearTimeout(timer)
+        }
+        let n = 0
+        timer = setTimeout(()=>{
+            n=n+1
+            console.log(value,n++)
+        },3000)
+
+
+    },
+    init() {
 
         var del=document.querySelectorAll('.dg') || null
         if(del.length){
@@ -115,7 +134,7 @@ export default {
 
 
         this.loop();
-     },
+    },
     regenerateGlobe() {
         var dom, domStyle;
         var x, y;
@@ -378,6 +397,20 @@ export default {
 
 <style lang="scss" type="text/css" scoped>
 
+
+
+input{
+    height:30px;
+    width:200px;
+    position: absolute;
+    z-index: 3;
+}
+
+
+
+
+
+//以下是地球的CSS
 .world {    //修改容器尺寸
     position: absolute;
     width: 100%;
@@ -435,4 +468,7 @@ export default {
     border:1px solid red;
     pointer-events: none;
 }
+
+//以上是地球的CSS
+
 </style>
