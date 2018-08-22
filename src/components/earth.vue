@@ -1,16 +1,18 @@
 <template>
     <div>
-        <input type="text" @input="getInformation">
+    
         <div class="world" 
             @mousedown="onMouseDown" @dragstart="ondragstart" @mousemove="onMouseMove"
-            @mouseup="onMouseUp" @mousewheel="onMouseWheel">
-            <div class="world-bg">
+            @mouseup="onMouseUp" 
+             >
+            <div class="world-bg" v-show="showEarth">
                 <div class="world-globe" >   
                     <div class="world-globe-doms-container" ></div>                                             
                 </div> 
                 <div class="world-globe-pole"></div> 
                 <div class="world-globe-halo"> </div>              
-            </div>      
+            </div>
+  
         </div>
     </div>
 </template>
@@ -18,10 +20,10 @@
 <script>
 
 export default {
-  props:[],
+  //props:['whiteBackgroundCircle','lightCircle','radius'],
   data(){
     return {
-        content:null,
+        //地球参数
         config:{
             percent: 0,
             lat: 0,
@@ -30,16 +32,19 @@ export default {
             segY: 18,
             isHaloVisible: true,
             isPoleVisible: true,
-            autoSpin: false,
+            autoSpin: true,
             zoom: 0,
             skipPreloaderAnimation: false,
         },
         URLS:{
-            bg: 'http://wow.techbrood.com/uploads/160401/css_globe_bg.jpg',
+            //bg: 'http://wow.techbrood.com/uploads/160401/css_globe_bg.jpg',
             diffuse: 'http://wow.techbrood.com/uploads/160401/css_globe_diffuse.jpg',
-            halo: 'http://wow.techbrood.com/uploads/160401/css_globe_halo.png',
+            //halo: 'http://wow.techbrood.com/uploads/160401/css_globe_halo.png',
         },
-        radius:536/2,
+        radius:436/2,
+        lightCircle:740,
+        whiteBackgroundCircle:436,
+
         transformStyleName:PerspectiveTransform.transformStyleName,
         isMouseDown:false,
         isTweening:false,
@@ -69,35 +74,35 @@ export default {
         dragLat:null,
         dragLng:null,
         dY:null,
-        dX:null,      
+        dX:null,
+        //地球参数
+        
+        showEarth:true,
     }
   },
   mounted(){
       this.init()
   },
   methods:{
-    getInformation(e){
+    makeEarthSize(){
 
-        let timer
-        let input=e.currentTarget
-        let value=input.value.trim()
-        if(timer){
-            clearTimeout(timer)
-        }
-        timer = setTimeout(()=>{
-            console.log(value)
-        },3000)
-
-
+        let whiteBackgroundCircle=document.querySelector('.world-globe-pole')//白色底
+        whiteBackgroundCircle.style.width=this.whiteBackgroundCircle+'px'
+        whiteBackgroundCircle.style.height=this.whiteBackgroundCircle+'px'
+        this.radius=this.radius
     },
+
     init() {
 
-        var del=document.querySelectorAll('.dg') || null
+        this.makeEarthSize()
+
+        let del=document.querySelectorAll('.dg') || null
         if(del.length){
-            for(var i=1;i<del.length;i++){
+            for(var i=0;i<del.length;i++){
                 del[i].remove()
             }
         }
+
 
         this.world = document.querySelector('.world')
         this.worldBg = document.querySelector('.world-bg')
@@ -110,18 +115,19 @@ export default {
 
         this.regenerateGlobe();
 
-        var gui = new dat.GUI()
-        gui.add(this.config, 'lat', -90, 90).listen()
-        gui.add(this.config, 'lng', -180, 180).listen()
-        gui.add(this.config, 'isHaloVisible')
-        gui.add(this.config, 'isPoleVisible')
-        gui.add(this.config, 'autoSpin')
-        gui.add(this.config, 'zoom', 0,1).listen()
+        // var gui = new dat.GUI()
+        // gui.add(this.config, 'lat', -90, 90).listen()
+        // gui.add(this.config, 'lng', -180, 180).listen()
+        // gui.add(this.config, 'isHaloVisible')
+        // gui.add(this.config, 'isPoleVisible')
+        // gui.add(this.config, 'autoSpin')
+        // gui.add(this.config, 'zoom', 0,1).listen()
 
         this.stats = new Stats()
-        this.stats.domElement.style.position = 'absolute'
-        this.stats.domElement.style.left = 0
-        this.stats.domElement.style.top = 0
+        // this.stats.domElement.style.position = 'absolute'
+        // this.stats.domElement.style.left = '10px'
+        // this.stats.domElement.style.top = '10px'
+        this.stats.domElement.style.display="none"
         document.body.appendChild(this.stats.domElement)
         
         this.bindEventAboutPicture()
@@ -129,7 +135,6 @@ export default {
         // this.world.addEventListener('touchstart', this.touchPass(this.onMouseDown));
         // this.world.addEventListener('touchmove', this.touchPass(this.onMouseMove));
         // this.world.addEventListener('touchend', this.touchPass(this.onMouseUp));
-
 
         this.loop();
     },
@@ -171,29 +176,29 @@ export default {
 
         for (y = 0; y < segY; ++y) {
             for (x = 0; x < segX; ++x) {
-                dom = document.createElement('div');//ok
-                dom.id='picture-'+y+'-'+x//ok
-                dom.className="picture"//ok
-                domStyle = dom.style;//ok    
-                domStyle.backgroundColor="red"        
-                domStyle.position = 'absolute';//ok
-                domStyle.width = segWidth + 'px';//ok
-                domStyle.height = segHeight + 'px';//ok
-                domStyle.overflow = 'hidden';//ok
-                domStyle[PerspectiveTransform.transformOriginStyleName] = '0 0';
-                domStyle.backgroundImage = diffuseImgBackgroundStyle;//ok
-                dom.perspectiveTransform = new PerspectiveTransform(dom, segWidth, segHeight);
-                dom.topLeft = this.vertices[y][x];
-                dom.topRight = this.vertices[y][x + 1];
-                dom.bottomLeft = this.vertices[y + 1][x];
-                dom.bottomRight = this.vertices[y + 1][x + 1];
-                domStyle.backgroundPosition = (-segWidth * x) + 'px ' + (-segHeight * y) + 'px';//ok
-                this.globeContainer.appendChild(dom);//ok
-                this.globeDoms.push(dom);//ok
+                dom = document.createElement('div')
+                dom.id='picture-'+y+'-'+x
+                dom.className="picture"
+                domStyle = dom.style    
+                domStyle.position = 'absolute'
+                domStyle.width = segWidth + 'px'
+                domStyle.height = segHeight + 'px'
+                domStyle.overflow = 'hidden'
+                domStyle[PerspectiveTransform.transformOriginStyleName] = '0 0'
+                domStyle.backgroundImage = diffuseImgBackgroundStyle
+                dom.perspectiveTransform = new PerspectiveTransform(dom, segWidth, segHeight)
+                dom.topLeft = this.vertices[y][x]
+                dom.topRight = this.vertices[y][x + 1]
+                dom.bottomLeft = this.vertices[y + 1][x]
+                dom.bottomRight = this.vertices[y + 1][x + 1]
+                domStyle.backgroundPosition = (-segWidth * x) + 'px ' + (-segHeight * y) + 'px'
+                this.globeContainer.appendChild(dom)
+                this.globeDoms.push(dom)
             }
         }
     },
     bindEventAboutPicture(){
+        let _this=this
         var picture = document.querySelectorAll('.picture')
         for(var i=0;i<picture.length;i++){
             picture[i].addEventListener('mouseover', function(e){
@@ -203,8 +208,17 @@ export default {
             var y=string[2]
             console.log('this',this)
             this.addEventListener('mousewheel',function(e){
-                //console.log('我是滚轮监听',x,y)
-            })
+                console.log('我是滚轮监听',x,y)
+                if (e.wheelDelta) {  //第一步：先判断浏览器IE，谷歌滑轮事件               
+                    if (e.wheelDelta > 0) { //当滑轮向上滚动时  
+                        console.log('滚动向上')
+                      
+                    } else if (e.wheelDelta < 0) { //当滑轮向下滚动时  
+                        console.log('滚动向下')
+                        
+                    }  
+                }                             
+            }.bind(_this))
         })
         }   
     },
@@ -213,7 +227,7 @@ export default {
         return false;
     },
     onMouseDown(e) {
-                console.log('mousedown  target',e.target)
+        console.log('mousedown  target',e.target)
         this.isMouseDown = true
         this.dragX = e.pageX
         this.dragY = e.pageY
@@ -241,6 +255,8 @@ export default {
                 console.log('滚动向上')
             } else if (e.wheelDelta < 0) { //当滑轮向下滚动时  
                 console.log('滚动向下')
+                this.showEarth=true
+                
             }  
         } 
     },
@@ -404,8 +420,10 @@ input{
     z-index: 3;
 }
 
+//以下是二级地图的CSS
+.smallMap{
 
-
+}
 
 
 //以下是地球的CSS
@@ -420,6 +438,7 @@ input{
     cursor: grab;
     top:0%;
     left:0%;
+
 }
 .world-bg {  //继承world的尺寸，可不修改
     position: absolute;
@@ -438,8 +457,6 @@ input{
 }
 .world-globe-pole {   //修改白底圆圈尺寸，如果修改了宽高，同时要去修改地球的半径，地球的亮光图
     position: absolute;
-    width: 530px;
-    height: 530px;
     left: 50%;
     top: 50%;
     transform:translate(-50%,-50%);
@@ -463,7 +480,6 @@ input{
     width: 740px;
     height: 705px;
     z-index: 2;
-    border:1px solid red;
     pointer-events: none;
 }
 
