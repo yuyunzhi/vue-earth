@@ -421,9 +421,7 @@ input{
 }
 
 //以下是二级地图的CSS
-.smallMap{
 
-}
 
 
 //以下是地球的CSS
